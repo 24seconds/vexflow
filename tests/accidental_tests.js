@@ -27,6 +27,7 @@ Vex.Flow.Test.Accidental = (function() {
       Vex.Flow.Test.runTests('Multi Voice', Vex.Flow.Test.Accidental.multiVoice);
       Vex.Flow.Test.runTests('Microtonal', Vex.Flow.Test.Accidental.microtonal);
       Vex.Flow.Test.runTests('Microtonal (Iranian)', Vex.Flow.Test.Accidental.microtonal_iranian);
+      Vex.Flow.Test.runTests('Sagittal', Vex.Flow.Test.Accidental.sagittal);
       test('Automatic Accidentals - Simple Tests', Vex.Flow.Test.Accidental.autoAccidentalWorking);
       Vex.Flow.Test.runTests('Automatic Accidentals', Vex.Flow.Test.Accidental.automaticAccidentals0);
       Vex.Flow.Test.runTests('Automatic Accidentals - C major scale in Ab', Vex.Flow.Test.Accidental.automaticAccidentals1);
@@ -91,8 +92,8 @@ Vex.Flow.Test.Accidental = (function() {
     },
 
     cautionary: function(options) {
-      var vf = VF.Test.makeFactory(options, 700, 240);
-      var stave = vf.Stave({ x: 10, y: 10, width: 550 });
+      var vf = VF.Test.makeFactory(options, 800, 240);
+      var stave = vf.Stave({ x: 0, y: 10, width: 780 });
       var score = vf.EasyScore();
 
       var accids = Object
@@ -337,11 +338,13 @@ Vex.Flow.Test.Accidental = (function() {
           .addAccidental(4, newAccid('++').setAsCautionary())
           .addAccidental(5, newAccid('d').setAsCautionary()),
 
-        vf.StaveNote({ keys: ['f/4', 'g/4', 'a/4', 'b/4'], duration: '16' })
+        vf.StaveNote({ keys: ['f/4', 'g/4', 'a/4', 'b/4', 'd/5', 'g/5'], duration: '16' })
           .addAccidental(0, newAccid('++-'))
           .addAccidental(1, newAccid('+-'))
           .addAccidental(2, newAccid('bs'))
-          .addAccidental(3, newAccid('bss')),
+          .addAccidental(3, newAccid('bss'))
+          .addAccidental(4, newAccid('afhf'))
+          .addAccidental(5, newAccid('ashs')),
       ];
 
       VF.Formatter.SimpleFormat(notes, 0, { paddingBetween: 35 });
@@ -418,6 +421,100 @@ Vex.Flow.Test.Accidental = (function() {
 
       Vex.Flow.Test.plotLegendForNoteWidth(ctx, 580, 140);
       ok(true, 'Microtonal Accidental (Iranian)');
+    },
+
+    sagittal: function(options) {
+      var assert = options.assert;
+      var vf = VF.Test.makeFactory(options, 700, 240);
+      var newAccid = makeNewAccid(vf);
+      var ctx = vf.getContext();
+      vf.Stave({ x: 10, y: 10, width: 650 });
+
+      var notes = [
+        vf.StaveNote({ keys: ['d/4', 'f/4', 'b/4', 'b/4'], duration: '4' })
+          .addAccidental(1, newAccid('accSagittal11MediumDiesisUp'))
+          .addAccidental(2, newAccid('accSagittal5CommaDown'))
+          .addAccidental(3, newAccid('b'))
+          .addAccidental(3, newAccid('accSagittal7CommaDown')),
+
+        vf.StaveNote({ keys: ['d/4', 'f/4', 'a/4', 'b/4'], duration: '4' })
+          .addAccidental(2, newAccid('accSagittal35LargeDiesisDown')),
+
+        vf.StaveNote({ keys: ['c/4', 'e/4', 'g/4', 'c/5'], duration: '8' })
+          .addAccidental(1, newAccid('accSagittal5CommaDown')),
+
+        vf.StaveNote({ keys: ['c/4', 'e/4', 'g/4', 'b/4'], duration: '8' })
+          .addAccidental(1, newAccid('b'))
+          .addAccidental(1, newAccid('accSagittal7CommaDown'))
+          .addAccidental(3, newAccid('accSagittal11LargeDiesisDown')),
+
+        vf.StaveNote({ keys: ['d/4', 'f/4', 'b/4', 'b/4'], duration: '4' })
+          .addAccidental(1, newAccid('accSagittal11MediumDiesisUp'))
+          .addAccidental(2, newAccid('accSagittal5CommaDown'))
+          .addAccidental(3, newAccid('accSagittalFlat7CDown')),
+
+        vf.StaveNote({ keys: ['d/4', 'f/4', 'a/4', 'b/4'], duration: '4' })
+          .addAccidental(2, newAccid('accSagittal35LargeDiesisDown')),
+
+        vf.StaveNote({ keys: ['c/4', 'e/4', 'g/4', 'c/5'], duration: '8' })
+          .addAccidental(1, newAccid('accSagittal5CommaDown')),
+
+        vf.StaveNote({ keys: ['c/4', 'e/4', 'g/4', 'b/4'], duration: '8' })
+          .addAccidental(1, newAccid('accSagittalFlat7CDown'))
+          .addAccidental(3, newAccid('accSagittal11LargeDiesisDown')),
+      ];
+
+      vf.StaveTie({
+        from: notes[0],
+        to: notes[1],
+        first_indices: [0, 1],
+        last_indices: [0, 1],
+      });
+
+      vf.StaveTie({
+        from: notes[0],
+        to: notes[1],
+        first_indices: [3],
+        last_indices: [3],
+        options: {
+          direction: VF.Stem.DOWN,
+        },
+      });
+
+      vf.StaveTie({
+        from: notes[4],
+        to: notes[5],
+        first_indices: [0, 1],
+        last_indices: [0, 1],
+      });
+
+      vf.StaveTie({
+        from: notes[4],
+        to: notes[5],
+        first_indices: [3],
+        last_indices: [3],
+        options: {
+          direction: VF.Stem.DOWN,
+        },
+      });
+
+      vf.Beam({ notes: notes.slice(2, 4) });
+      vf.Beam({ notes: notes.slice(6, 8) });
+
+      VF.Formatter.SimpleFormat(notes);
+
+      notes.forEach(function(note, index) {
+        Vex.Flow.Test.plotNoteWidth(vf.getContext(), note, 140);
+        assert.ok(note.getAccidentals().length > 0, 'Note ' + index + ' has accidentals');
+        note.getAccidentals().forEach(function(accid, index) {
+          assert.ok(accid.getWidth() > 0, 'Accidental ' + index + ' has set width');
+        });
+      });
+
+      vf.draw();
+
+      Vex.Flow.Test.plotLegendForNoteWidth(ctx, 580, 140);
+      ok(true, 'Sagittal');
     },
 
     automaticAccidentals0: function(options) {

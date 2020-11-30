@@ -12,6 +12,7 @@ import { Vex } from './vex';
 import { Accidental } from './accidental';
 import { Articulation } from './articulation';
 import { Annotation } from './annotation';
+import { ChordSymbol } from './chordsymbol';
 import { Formatter } from './formatter';
 import { FretHandFinger } from './frethandfinger';
 import { StringNumber } from './stringnumber';
@@ -23,6 +24,8 @@ import { Stave } from './stave';
 import { StaveTie } from './stavetie';
 import { StaveLine } from './staveline';
 import { StaveNote } from './stavenote';
+import { GlyphNote } from './glyphnote';
+import { RepeatNote } from './repeatnote';
 import { StaveConnector } from './staveconnector';
 import { System } from './system';
 import { TickContext } from './tickcontext';
@@ -45,6 +48,7 @@ import { BarNote } from './barnote';
 import { TabNote } from './tabnote';
 import { TabStave } from './tabstave';
 import { TextNote } from './textnote';
+import { TextFont } from './textfont';
 
 // To enable logging for this class. Set `Vex.Flow.Factory.DEBUG` to `true`.
 function L(...args) { if (Factory.DEBUG) Vex.L('Vex.Flow.Factory', args); }
@@ -167,6 +171,22 @@ export class Factory {
     return note;
   }
 
+  GlyphNote(glyph, noteStruct, options) {
+    const note = new GlyphNote(glyph, noteStruct, options);
+    if (this.stave) note.setStave(this.stave);
+    note.setContext(this.context);
+    this.renderQ.push(note);
+    return note;
+  }
+
+  RepeatNote(type, noteStruct, options) {
+    const note = new RepeatNote(type, noteStruct, options);
+    if (this.stave) note.setStave(this.stave);
+    note.setContext(this.context);
+    this.renderQ.push(note);
+    return note;
+  }
+
   GhostNote(noteStruct) {
     const ghostNote = new GhostNote(noteStruct);
     if (this.stave) ghostNote.setStave(this.stave);
@@ -283,6 +303,25 @@ export class Factory {
     return annotation;
   }
 
+  ChordSymbol(params) {
+    params = setDefaults(params, {
+      text: 'p',
+      vJustify: 'below',
+      hJustify: 'center',
+      fontFamily: 'Times',
+      fontSize: 14,
+      fontWeight: 'bold italic',
+      options: {},
+    });
+
+    const chordSymbol = new ChordSymbol(params.text);
+    chordSymbol.setHorizontalJustification(params.hJustify);
+    chordSymbol.setVerticalJustification(params.vJustify);
+    chordSymbol.setFont(params.fontFamily, params.fontSize, params.fontWeight);
+    chordSymbol.setContext(this.context);
+    return chordSymbol;
+  }
+
   Articulation(params) {
     params = setDefaults(params, {
       type: 'a.',
@@ -364,7 +403,7 @@ export class Factory {
       time: '4/4',
       options: {},
     });
-    const voice = new Voice(params.time);
+    const voice = new Voice(params.time, params.options);
     this.voices.push(voice);
     return voice;
   }
@@ -560,6 +599,13 @@ export class Factory {
     group.setContext(this.context);
     return group;
   }
+
+  TextFont(params = {}) {
+    params.factory = this;
+    const textFont = new TextFont(params);
+    return textFont;
+  }
+
 
   draw() {
     this.systems.forEach(i => i.setContext(this.context).format());
